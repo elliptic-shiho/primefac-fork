@@ -1,0 +1,10 @@
+DESCRIPTION.rst
+MANIFEST.in
+README.rst
+primefac.py
+setup.cfg
+setup.py
+primefac.egg-info/PKG-INFO
+primefac.egg-info/SOURCES.txt
+primefac.egg-info/dependency_links.txt
+primefac.egg-info/top_level.txt
