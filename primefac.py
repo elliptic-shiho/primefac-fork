@@ -218,7 +218,7 @@ def ispower(n):
         if r ** p == n: return r
         if r == 1: return 0
 if mpzv == 1: from gmpy import ispower
-if mpzv == 2: from gmpy2 import ispower
+if mpzv == 2: from gmpy2 import is_power as ispower
 
 def pollardRho_brent(n):
     if isprime(n): return n
@@ -306,7 +306,8 @@ def ecmul(m, p, A, n): # multiply point p by m on curve A modulo n
             else:   q, r = ecadd(r, q, p, n), ecdub(r, A, n)
             b /= 2
         return r
-def ecm(n, B1=10, B2=20):       # TODO: Determine the best defaults for B1 and B2 and the best way to increment them and iters
+def ecm(n, B1=10, B2=20):
+    # TODO: Determine the best defaults for B1 and B2 and the best way to increment them and iters
     # "Modern" ECM using Montgomery curves and an algorithm analogous to the two-phase variant of Pollard's p-1 method
     # TODO: We currently compute the prime lists from the sieve as we need them, but this means that we recompute them at every
     #       iteration.  While it would not be particularly efficient memory-wise, we might be able to increase time-efficiency
@@ -345,6 +346,20 @@ def ecm(n, B1=10, B2=20):       # TODO: Determine the best defaults for B1 and B
         B1 *= 3
         B2 *= 3
         iters *= 2
+
+
+def fermat(n):
+  x = isqrt(n) + 1
+  y = isqrt(x**2 - n)
+  while True:
+    w = x**2 - n - y**2
+    if w == 0:
+      break
+    if w > 0:
+      y += 1
+    else:
+      x += 1
+  return x+y
 
 
 # legendre symbol (a|m)
@@ -596,7 +611,7 @@ def mpqs(n):
 
         bound *= 1.2
 
-def multifactor(n, methods=(pollardRho_brent, pollard_pm1, williams_pp1, ecm, mpqs), verbose=False):
+def multifactor(n, methods=(pollardRho_brent, pollard_pm1, williams_pp1, ecm, mpqs, fermat), verbose=False):
     # Note that the multiprocing incurs relatively significant overhead.  Only call this if n is proving difficult to factor.
     def factory(method, n, output): output.put((method(n), str(method).split()[1]))
     factors = mpQueue()
@@ -611,7 +626,7 @@ def multifactor(n, methods=(pollardRho_brent, pollard_pm1, williams_pp1, ecm, mp
     return f
 
 def primefac(n, trial_limit=1000, rho_rounds=42000, verbose=False,
-             methods=(pollardRho_brent, pollard_pm1, williams_pp1, ecm, mpqs)):
+             methods=(pollardRho_brent, pollard_pm1, williams_pp1, ecm, mpqs, fermat)):
     # Obtains a complete factorization of n, yielding the prime factors as they are obtained.
     # If the user explicitly specifies a splitting method, use that method.  Otherwise,
     # 1.  Pull out small factors with trial division.
@@ -689,7 +704,7 @@ def primefac(n, trial_limit=1000, rho_rounds=42000, verbose=False,
         if isprime(n): yield n
         else: factors.append(n)
 
-def factorint(n, trial_limit=1000, rho_rounds=42000, methods=(pollardRho_brent, pollard_pm1, williams_pp1, ecm, mpqs)):
+def factorint(n, trial_limit=1000, rho_rounds=42000, methods=(pollardRho_brent, pollard_pm1, williams_pp1, ecm, mpqs, fermat)):
     out = {}
     for p in primefac(n, trial_limit=trial_limit, rho_rounds=rho_rounds, methods=methods): out[p] = out.get(p, 0) + 1
     return out
@@ -760,7 +775,8 @@ DETAILS:
                              Pollard's p-1 method,
                              Williams' p+1 method,
                              the elliptic curve method,
-                         and the multiple-polynomial quadratic sieve.
+                             the multiple-polynomial quadratic sieve, 
+                             and fermat's factorization method.
                Using the "verbose" option will cause primefac to report which of
                the various splitting methods separated which factors in stage 3.
 
@@ -818,8 +834,8 @@ if __name__ == "__main__":
     from sys import stdout, exit, argv
     if len(argv) == 1: exit(usage)
     start, rpx, tr, rr, veb, su = 1, [], 1000, 42000, False, False
-    ms = {"prb":pollardRho_brent, "p-1":pollard_pm1, "p+1":williams_pp1, "ecm":ecm, "mpqs":mpqs}
-    methods = (pollardRho_brent, pollard_pm1, williams_pp1, ecm, mpqs)
+    ms = {"prb":pollardRho_brent, "p-1":pollard_pm1, "p+1":williams_pp1, "ecm":ecm, "mpqs":mpqs, "fermat":fermat}
+    methods = (pollardRho_brent, pollard_pm1, williams_pp1, ecm, mpqs, fermat)
     try:
         for arg in argv[1:]:
             if arg in ("-v", "--verbose"): veb = True
