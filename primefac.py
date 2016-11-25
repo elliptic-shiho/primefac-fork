@@ -143,13 +143,13 @@ def isprime(n, tb=(3,5,7,11), eb=(2,), mrb=()):      # TODO: more streamlining
     # tb: trial division basis
     # eb: Euler's test basis
     # mrb: Miller-Rabin basis
-    
+
     # This test suite's first false positve is unknown but has been shown to be greater than 2**64.
     # Infinitely many are thought to exist.
-    
+
     if n%2 == 0 or n < 13 or n == isqrt(n)**2: return n in (2, 3, 5, 7, 11) # Remove evens, squares, and numbers less than 13
     if any(n%p == 0 for p in tb): return n in tb                            # Trial division
-    
+
     for b in eb:                                                            # Euler's test
         if b >= n: continue
         if not pow(b, n-1, n) == 1: return False
@@ -159,7 +159,7 @@ def isprime(n, tb=(3,5,7,11), eb=(2,), mrb=()):      # TODO: more streamlining
         if c == 1: continue
         while c != 1 and c != n-1: c = pow(c, 2, n)
         if c == 1: return False
-    
+
     s, d = pfactor(n)
     if not sprp(n, 2, s, d): return False
     if n < 2047: return True
@@ -190,7 +190,7 @@ def isprime(n, tb=(3,5,7,11), eb=(2,), mrb=()):      # TODO: more streamlining
             v, k = (v*v-2*k)%n, (k*k)%n
             if v == 0: return True
         return False
-    
+
     if not mrb:
         if   n <             1373653: mrb = [3]
         elif n <            25326001: mrb = [3,5]
@@ -217,6 +217,8 @@ def ispower(n):
         if r is None: continue
         if r ** p == n: return r
         if r == 1: return 0
+if mpzv == 1: from gmpy import ispower
+if mpzv == 2: from gmpy2 import ispower
 
 def pollardRho_brent(n):
     if isprime(n): return n
@@ -400,6 +402,12 @@ def mod_sqrt(n, p):
 
 # modular inverse of a mod m
 def modinv(a, m):
+    if mpzv == 1:
+      from gmpy import invert
+      return int(invert(a, m))
+    if mpzv == 2:
+      from gmpy2 import invert
+      return int(invert(a, m))
     a, x, u = a%m, 0, 1
     while a: x, u, m, a = u, x - (m/a)*u, a, m%a
     return x
@@ -411,19 +419,19 @@ def mpqs(n):
     # TODO: When this happens, get more data, but don't trash what we already have.
     # TODO: Rewrite to get a few more relations before proceeding to the linear algebra.
     # TODO: When we need to increase the bound, what is the optimal increment?
-    
+
     # Special cases: this function poorly handles primes and perfect powers:
     m = ispower(n)
     if m: return m
     if isprime(n): return n
-    
+
     root_n, root_2n = isqrt(n), isqrt(2*n)
     bound = ilog(n**6, 10)**2  # formula chosen by experiment
-    
+
     while True:
         try:
             prime, mod_root, log_p, num_prime = [], [], [], 0
-            
+
             # find a number of small primes for which n is a quadratic residue
             p = 2
             while p < bound or num_prime < 3:
@@ -435,26 +443,26 @@ def mpqs(n):
                     num_prime += 1
                 elif leg == 0: return p
                 p = nextprime(p)
-            
+
             x_max = len(prime)*60    # size of the sieve
-            
+
             m_val = (x_max * root_2n) >> 1    # maximum value on the sieved range
-            
+
             # fudging the threshold down a bit makes it easier to find powers of primes as factors
             # as well as partial-partial relationships, but it also makes the smoothness check slower.
             # there's a happy medium somewhere, depending on how efficient the smoothness check is
             thresh = log(m_val, 10) * 0.735
-            
+
             # skip small primes. they contribute very little to the log sum
             # and add a lot of unnecessary entries to the table
             # instead, fudge the threshold down a bit, assuming ~1/4 of them pass
             min_prime = mpz(thresh*3)
             fudge = sum(log_p[i] for i,p in enumerate(prime) if p < min_prime)/4
             thresh -= fudge
-            
+
             smooth, used_prime, partial = [], set(), {}
             num_smooth, num_used_prime, num_partial, num_poly, root_A = 0, 0, 0, 0, isqrt(root_2n / x_max)
-            
+
             while num_smooth <= num_used_prime:
                 # find an integer value A such that:
                 # A is =~ sqrt(2*n) / x_max
@@ -465,18 +473,18 @@ def mpqs(n):
                     leg = legendre(n, root_A)
                     if leg == 1: break
                     elif leg == 0: return root_A
-                
+
                 A = root_A**2
-                
+
                 # solve for an adequate B
                 # B*B is a quadratic residue mod n, such that B*B-A*C = n
                 # this is unsolvable if n is not a quadratic residue mod sqrt(A)
                 b = mod_sqrt(n, root_A)
                 B = (b + (n - b*b) * modinv(b + b, root_A))%A
                 C = (B*B - n) / A        # B*B-A*C = n <=> C = (B*B-n)/A
-                
+
                 num_poly += 1
-                
+
                 # sieve for prime factors
                 sums, i = [0.0]*(2*x_max), 0
                 for p in prime:
@@ -495,7 +503,7 @@ def mpqs(n):
                             sums[k-b+x_max] += logp
                         k += p
                     i += 1
-                
+
                 # check for smooths
                 i = 0
                 for v in sums:
@@ -509,7 +517,7 @@ def mpqs(n):
                         # because A is chosen to be square, it doesn't need to be sieved
                         val = sieve_val = (A*x + 2*B)*x + C
                         if sieve_val < 0: vec, sieve_val = {-1}, -sieve_val
-                        
+
                         for p in prime:
                             while sieve_val%p == 0:
                                 if p in vec: sqr += [p] # track perfect sqr facs to avoid sqrting something huge at the end
@@ -529,11 +537,11 @@ def mpqs(n):
                             num_partial += 1
                         else: partial[sieve_val] = (vec, (sqr, A*x+B, root_A))      # save partial for later pairing
                     i += 1
-                
+
                 num_smooth, num_used_prime = len(smooth), len(used_prime)
-            
+
             used_prime = sorted(list(used_prime))
-            
+
             # set up bit fields for gaussian elimination
             masks, mask, bitfields = [], 1, [0]*num_used_prime
             for vec, vals in smooth:
@@ -543,7 +551,7 @@ def mpqs(n):
                     if p in vec: bitfields[i] |= mask
                     i += 1
                 mask <<= 1
-            
+
             # row echelon form
             offset = 0
             null_cols = []
@@ -557,13 +565,13 @@ def mpqs(n):
                 if pivot:
                     null_cols += [col]
                     offset += 1
-            
+
             # reduced row echelon form
             for row in xrange(num_used_prime):
                 mask = bitfields[row] & -bitfields[row]        # lowest set bit
                 for up_row in xrange(row):
                     if bitfields[up_row] & mask: bitfields[up_row] ^= bitfields[row]
-            
+
             # check for non-trivial congruencies
             # TODO: if none exist, check combinations of null space columns...
             # if _still_ none exist, sieve more values
@@ -583,9 +591,9 @@ def mpqs(n):
                     i += 1
                 factor = gcd(listprod(rAs)*listprod(lhs) - listprod(rhs), n)
                 if 1 < factor < n: return factor
-        
+
         except IndexError: pass
-        
+
         bound *= 1.2
 
 def multifactor(n, methods=(pollardRho_brent, pollard_pm1, williams_pp1, ecm, mpqs), verbose=False):
@@ -613,10 +621,10 @@ def primefac(n, trial_limit=1000, rho_rounds=42000, verbose=False,
     # TODO: a certain amount of P-1?
     # 3.  Launch multifactor on the remainder.  Multifactor has enough overhead that we want to be fairly sure that rho isn't
     #     likely to yield new factors soon.  The default value of rho_rounds=42000 seems good for that but is probably overkill.
-    
+
     if n < 2: return
     if isprime(n): yield n; return
-    
+
     factors, nroot = [], isqrt(n)
     for p in primegen(): # Note that we remove factors of 2 whether the user wants to or not.
         if n%p == 0:
@@ -632,7 +640,7 @@ def primefac(n, trial_limit=1000, rho_rounds=42000, verbose=False,
             return
         if p >= trial_limit: break
     if isprime(n): yield n; return
-    
+
     if rho_rounds == "inf":
         factors = [n]
         while len(factors) != 0:
@@ -645,7 +653,7 @@ def primefac(n, trial_limit=1000, rho_rounds=42000, verbose=False,
             if isprime(n): yield n
             else: factors.append(n)
         return
-    
+
     factors, difficult = [n], []
     while len(factors) != 0:
         rhocount = 0
@@ -669,7 +677,7 @@ def primefac(n, trial_limit=1000, rho_rounds=42000, verbose=False,
             if isprime(n): yield n
             else: factors.append(n)
         except Exception: difficult.append(n) # Factoring n took too long.  We'll have multifactor chug on it.
-    
+
     factors = difficult
     while len(factors) != 0:
         n = min(factors)
@@ -730,7 +738,7 @@ USAGE:
 
     Note that the primes in the summary lines are listed in strictly-increasing
     order, regardless of the order in which they were found.
-    
+
     The single-character versions of the verbosity and summary flags may be
     combined into a single flag, "-vs" or "-sv".
 
