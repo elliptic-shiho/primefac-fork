@@ -12,7 +12,7 @@ This is fork of [primefac](https://pypi.python.org/pypi/primefac) Module.
 ## Requirements
 * Python 2.x/Python 3.x
   - If you want to faster factorization, you can use *gmpy* or *gmpy2*
-  - If installed *factordb-pycli* module, maybe factorization some large number.
+  - If you install *factordb-pycli* module, primefac-fork will use it for factor large number.
 
 ## License
 This software released under the MIT License. 
