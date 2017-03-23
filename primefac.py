@@ -17,9 +17,11 @@ from math import log
 # Note that the multiprocing incurs relatively significant overhead.
 # Only call this if n is proving difficult to factor.
 def multifactor(n, methods=(pollardRho_brent, pollard_pm1, williams_pp1,
-                ecm, mpqs, fermat), verbose=False):
+                ecm, mpqs, fermat, factordb), verbose=False):
     def factory(method, n, output):
-        output.put((method(n), str(method).split()[1]))
+        g = method(n)
+        if g is not None:
+          output.put((g, str(method).split()[1]))
     factors = mpQueue()
     procs = [Process(target=factory, args=(m, n, factors)) for m in methods]
     for p in procs:
@@ -55,7 +57,7 @@ Otherwise,
 
 def primefac(n, trial_limit=1000, rho_rounds=42000, verbose=False,
              methods=(pollardRho_brent, pollard_pm1, williams_pp1, ecm, mpqs,
-                      fermat)):
+                      fermat, factordb)):
     if n < 2:
         return
     if isprime(n):
@@ -145,7 +147,7 @@ def primefac(n, trial_limit=1000, rho_rounds=42000, verbose=False,
         else:
             factors.append(n)
 
-def factorint(n, trial_limit=1000, rho_rounds=42000, methods=(pollardRho_brent, pollard_pm1, williams_pp1, ecm, mpqs, fermat)):
+def factorint(n, trial_limit=1000, rho_rounds=42000, methods=(pollardRho_brent, pollard_pm1, williams_pp1, ecm, mpqs, fermat, factordb)):
     out = {}
     for p in primefac(n, trial_limit=trial_limit, rho_rounds=rho_rounds, methods=methods):
         out[p] = out.get(p, 0) + 1
@@ -204,7 +206,8 @@ DETAILS:
                              Williams' p+1 method,
                              the elliptic curve method,
                              the multiple-polynomial quadratic sieve,
-                             and fermat's factorization method.
+                             the fermat's factorization method,
+                             and search known factors using factordb.
                Using the "verbose" option will cause primefac to report which of
                the various splitting methods separated which factors in stage 3.
     RPN:       The acceptable binary operators are + - * / % **.
@@ -274,8 +277,9 @@ def main(argv):
           "p+1": williams_pp1,
           "ecm": ecm,
           "mpqs": mpqs,
-          "fermat": fermat}
-    methods = (pollardRho_brent, pollard_pm1, williams_pp1, ecm, mpqs, fermat)
+          "fermat": fermat,
+          "factordb": factordb}
+    methods = (pollardRho_brent, pollard_pm1, williams_pp1, ecm, mpqs, fermat, factordb)
     try:
         for arg in argv[1:]:
             if arg in ("-v", "--verbose"):
