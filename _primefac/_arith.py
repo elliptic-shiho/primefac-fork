@@ -79,7 +79,7 @@ def ilog(x, b):
 
 # Returns the largest integer that, when squared/cubed/etc, yields n, or 0 if no such integer exists.
 # Note that the power to which this number is raised will be prime.
-def _ispower(n):
+def ispower(n):
     for p in _prime.primegen():
         r = introot(n, p)
         if r is None:
@@ -171,21 +171,19 @@ def _modinv_gmpy(a, m):
 if _util.gmpy_version > 0:
     gcd = _util.gmpy.gcd
     jacobi = _util.gmpy.jacobi
-    ispower = _util.gmpy.is_power
     legendre = _legendre_gmpy
     modinv = _modinv_gmpy
     if _util.gmpy_version == 2:
         isqrt = _util.gmpy.isqrt
-        introot = _introot_gmpy
+        introot = _introot_gmpy2
     else:
         isqrt = _util.gmpy.sqrt
-        introot = _introot_gmpy2
+        introot = _introot_gmpy
 else:
     gcd = _gcd
     isqrt = _isqrt
     introot = _introot
     jacobi = _jacobi
-    ispower = _ispower 
     legendre = _legendre1
     modinv = _modinv
 
