@@ -20,7 +20,7 @@ setup(
     keywords='number numbers integer integers factoring factorization primes prime numbers math mathematics pollard\'s rho pollard\'s p-1 williams\' p+1 elliptic curve method ecm ecf multiple polynomial quadratic sieve mpqs',
     packages=find_packages(),
     py_modules=['primefac', '_primefac'],
-    install_requires=['six'],
+    install_requires=['six', 'gmpy', 'factordb-pycli'],
 
     classifiers=[
         'Development Status :: 5 - Production/Stable',

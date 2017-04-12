@@ -1,23 +1,15 @@
 #! /usr/bin/env python
 
 from __future__ import print_function, division
-from _primefac import *
-
-# Formatting note: this file's maximum line length is 128 characters.
-
-# TODO: Python 2.x/3.x compatibility
-from six.moves import xrange, reduce
-import six
-
-from multiprocessing import Process, Queue as mpQueue
-from itertools import count, takewhile
-from random import randrange
-from math import log
+import _primefac
 
 # Note that the multiprocing incurs relatively significant overhead.
 # Only call this if n is proving difficult to factor.
-def multifactor(n, methods=(pollardRho_brent, pollard_pm1, williams_pp1,
-                ecm, mpqs, fermat, factordb), verbose=False):
+def multifactor(n, methods=(_primefac.pollardRho_brent, _primefac.pollard_pm1, _primefac.williams_pp1,
+                _primefac.ecm, _primefac.mpqs, _primefac.fermat, _primefac.factordb), verbose=False):
+    from multiprocessing import Process, Queue as mpQueue
+    from six.moves import xrange, reduce
+    import six
     def factory(method, n, output):
         g = method(n)
         if g is not None:
@@ -46,7 +38,7 @@ Obtains a complete factorization of n, yielding the prime factors as they are
 obtained. If the user explicitly specifies a splitting method, use that method.
 Otherwise,
 1.  Pull out small factors with trial division.
-2.  Do a few rounds of Pollard's Rho algorithm.
+2.  Do a few rounds of _primefac.pollard's Rho algorithm.
     TODO: a few rounds of ECM by itself?
     TODO: a certain amount of P-1?
 3.  Launch multifactor on the remainder.  Multifactor has enough overhead that
@@ -56,8 +48,12 @@ Otherwise,
 '''
 
 def primefac(n, trial_limit=1000, rho_rounds=42000, verbose=False,
-             methods=(pollardRho_brent, pollard_pm1, williams_pp1, ecm, mpqs,
-                      fermat, factordb)):
+             methods=(_primefac.pollardRho_brent, _primefac.pollard_pm1, _primefac.williams_pp1, _primefac.ecm, _primefac.mpqs,
+                      _primefac.fermat, _primefac.factordb)):
+    from _primefac import isprime, isqrt, primegen
+    from six.moves import xrange, reduce
+    from random import randrange
+    import six
     if n < 2:
         return
     if isprime(n):
@@ -90,7 +86,7 @@ def primefac(n, trial_limit=1000, rho_rounds=42000, verbose=False,
         while len(factors) != 0:
             n = min(factors)
             factors.remove(n)
-            f = pollardRho_brent(n)
+            f = _primefac.pollardRho_brent(n)
             if isprime(f):
                 yield f
             else:
@@ -147,24 +143,24 @@ def primefac(n, trial_limit=1000, rho_rounds=42000, verbose=False,
         else:
             factors.append(n)
 
-def factorint(n, trial_limit=1000, rho_rounds=42000, methods=(pollardRho_brent, pollard_pm1, williams_pp1, ecm, mpqs, fermat, factordb)):
+def factorint(n, trial_limit=1000, rho_rounds=42000, methods=(_primefac.pollardRho_brent, _primefac.pollard_pm1, _primefac.williams_pp1, _primefac.ecm, _primefac.mpqs, _primefac.fermat, _primefac.factordb)):
     out = {}
     for p in primefac(n, trial_limit=trial_limit, rho_rounds=rho_rounds, methods=methods):
         out[p] = out.get(p, 0) + 1
     return out
 
 usage = """
-This is primefac version 1.1.
+This is primefac-fork version 1.1.
 USAGE:
     primefac [-vs|-sv] [-v|--verbose] [-s|--summary] [-t=NUM] [-r=NUM]
-          [-m=[prb][,p-1][,p+1][,ecm][,mpqs]] rpn
+          [-m=[prb][,p-1][,p+1][,ecm][,mpqs][,fermat][,factordb]] rpn
     "rpn" is evaluated using integer arithmetic.  Each number that remains on
     the stack after evaluation is then factored.
     "-t" is the trial division limit.  Default == 1000.  Use "-t=inf" to use
     trial division exclusively.
-    "-r" is the number of rounds of Pollard's rho algorithm to try before
+    "-r" is the number of rounds of _primefac.pollard's rho algorithm to try before
     calling a factor "difficult".  Default == 42,000.  Use "-r=inf" to use
-    Pollard's rho exclusively once the trial division is completed.
+    _primefac.pollard's rho exclusively once the trial division is completed.
     If verbosity is invoked, we indicate in the output which algorithm produced
     which factors during the multifactor phase.
     If the summary flag is absent, then output is identical to the output of the
@@ -197,13 +193,13 @@ USAGE:
     This program can also be imported into your Python scripts as a module.
 DETAILS:
     Factoring: 1.  Trial divide using the primes <= the specified limit.
-               2.  Run Pollard's rho algorithm on the remainder.  Declare a
+               2.  Run _primefac.pollard's rho algorithm on the remainder.  Declare a
                    cofactor "difficult" if it survives more than the specified
                    number of rounds of rho.
                3.  Subject each remaining cofactor to five splitting methods in
-                   parallel: Pollard's rho algorithm with Brent's improvement,
-                             Pollard's p-1 method,
-                             Williams' p+1 method,
+                   parallel: _primefac.pollard's rho algorithm with Brent's improvement,
+                             _primefac.pollard's p-1 method,
+                             _primefac.williams' p+1 method,
                              the elliptic curve method,
                              the multiple-polynomial quadratic sieve,
                              the fermat's factorization method,
@@ -231,9 +227,9 @@ CREDITS:
 def rpn(instr):
     stack = []
     for token in instr.split():
-        if set(token).issubset("1234567890"):
-            stack.append(int(token))
-        elif len(token) > 1 and token[0] == '-' and set(token[1:]).issubset("1234567890"):
+        if set(token).issubset("1234567890L"):
+            stack.append(int(token.rstrip('L')))
+        elif len(token) > 1 and token[0] == '-' and set(token[1:]).issubset("1234567890L"):
             stack.append(int(token))
         elif token in ('+', '-', '*', '/', '%', '**', 'x', 'xx'):   # binary operators
             b = stack.pop()
@@ -266,20 +262,22 @@ def rpn(instr):
             stack.append(res)
         else:
             raise Exception("Failed to evaluate RPN expression: not sure what to do with '{t}'.".format(t=token))
-    return [mpz(i) for i in stack]
+    return [_primefac.mpz(i) for i in stack]
 
 def main(argv):
+    from six.moves import xrange, reduce
+    import six
     if len(argv) == 1:
         sysexit(usage)
     rpx, tr, rr, veb, su = [], 1000, 42000, False, False
-    ms = {"prb": pollardRho_brent,
-          "p-1": pollard_pm1,
-          "p+1": williams_pp1,
-          "ecm": ecm,
-          "mpqs": mpqs,
-          "fermat": fermat,
-          "factordb": factordb}
-    methods = (pollardRho_brent, pollard_pm1, williams_pp1, ecm, mpqs, fermat, factordb)
+    ms = {"prb": _primefac.pollardRho_brent,
+          "p-1": _primefac.pollard_pm1,
+          "p+1": _primefac.williams_pp1,
+          "ecm": _primefac.ecm,
+          "mpqs": _primefac.mpqs,
+          "fermat": _primefac.fermat,
+          "factordb": _primefac.factordb}
+    methods = (_primefac.pollardRho_brent, _primefac.pollard_pm1, _primefac.williams_pp1, _primefac.ecm, _primefac.mpqs, _primefac.fermat, _primefac.factordb)
     try:
         for arg in argv[1:]:
             if arg in ("-v", "--verbose"):
@@ -303,7 +301,7 @@ def main(argv):
                 rpx.append(arg)
         nums = rpn(' '.join(rpx))
     except:
-        sysexit("Error while parsing arguments")
+        sysexit("Error while parsing arguments" + str(e))
     if su:
         print()
     for n in nums:
@@ -314,7 +312,7 @@ def main(argv):
             f[p] = f.get(p, 0) + 1
             print(p, end=' ')
             stdout.flush()
-            assert isprime(p) and n % p == 0, (n, p)
+            assert _primefac.isprime(p) and n % p == 0, (n, p)
         print()
         if su:
             print("Z%d  = " % len(str(n)), end='')
