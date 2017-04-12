@@ -17,6 +17,7 @@ def mpqs(n):
     from _primefac._arith import modinv
     from _primefac._prime import isprime, nextprime
     from _primefac._util import listprod, mpz
+    from six.moves import xrange
     from math import log
 
     # Special cases: this function poorly handles primes and perfect powers:
