@@ -1,5 +1,7 @@
-primefac fork
+primefac fork 
 ===============
+
+[![Build Status](https://api.travis-ci.org/elliptic-shiho/primefac-fork.svg?branch=master)](https://travis-ci.org/elliptic-shiho/primefac-fork)
 
 This is fork of [primefac](https://pypi.python.org/pypi/primefac) Module.
 
