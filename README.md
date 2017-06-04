@@ -19,6 +19,12 @@ This is fork of [primefac](https://pypi.python.org/pypi/primefac) Module.
 ## License
 This software released under the MIT License. 
 
+## Installation
+
+To install directly from this repository:
+
+``pip install git+git://github.com/elliptic-shiho/primefac-fork@master``
+
 ---
 
 Below is the original documentation for the primefac module. 
