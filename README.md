@@ -6,7 +6,6 @@ primefac fork
 This is fork of [primefac](https://pypi.python.org/pypi/primefac) Module.
 
 * use a **fast** function, in `modinv`
-* use [ecpy](https://github.com/elliptic-shiho/ecpy/) for faster ECM
 * Implement fermat factorization
 * Use [factordb module](https://github.com/ryosan-470/factordb-pycli) for large number
 
