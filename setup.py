@@ -10,7 +10,7 @@ with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f: long_descr
 
 setup(
     name='primefac',
-    version='1.1',
+    version='1.1.1',
     description='Module and command-line utility for factoring integers into primes.  Formerly called pyfac.',
     long_description=long_description,
     url='https://pypi.python.org/pypi/primefac',
