@@ -102,6 +102,8 @@ def mpqs(n):
                         continue
                     logp = log_p[i]
                     g = gcd(A, p)
+                    if g == p:
+                      continue
                     inv_A = modinv(A // g, p // g) * g
                     # modular root of the quadratic
                     a, b, k = (mpz(((mod_root[i] - B) * inv_A) % p),
