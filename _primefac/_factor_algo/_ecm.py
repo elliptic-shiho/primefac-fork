@@ -1,5 +1,6 @@
 from __future__ import division
 
+
 # http://programmingpraxis.com/2010/04/23/m/
 # http://programmingpraxis.com/2010/04/27/m/
 # Add two points p1 and p2 given point P0 = P1-P2 modulo n
@@ -10,6 +11,7 @@ def _ecadd(p1, p2, p0, n):
     t1, t2 = (x1-z1)*(x2+z2), (x1+z1)*(x2-z2)
     return (z0*pow(t1+t2, 2, n) % n, x0*pow(t1-t2, 2, n) % n)
 
+
 # double point p on A modulo n
 def _ecdub(p, A, n):
     x, z = p
@@ -17,6 +19,7 @@ def _ecdub(p, A, n):
     t1, t2 = pow(x+z, 2, n), pow(x-z, 2, n)
     t = t1 - t2
     return (t1*t2*4*Ad % n, (4*Ad*t2 + t*An)*t % n)
+
 
 # multiply point p by m on curve A modulo n
 def _ecmul(m, p, A, n):
@@ -103,4 +106,3 @@ def ecm(n, B1=10, B2=20):
         iters *= 2
 
 __all__ = [ecm]
-

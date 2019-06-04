@@ -1,7 +1,7 @@
 from __future__ import print_function, division
-import six
 
 from _primefac import _util, _prime
+
 
 def _gcd(a, b):
     while b:
@@ -77,7 +77,8 @@ def ilog(x, b):
     return l
 
 
-# Returns the largest integer that, when squared/cubed/etc, yields n, or 0 if no such integer exists.
+# Returns the largest integer that, when squared/cubed/etc, yields n, or 0
+# if no such integer exists.
 # Note that the power to which this number is raised will be prime.
 def ispower(n):
     for p in _prime.primegen():
@@ -95,7 +96,9 @@ def ispower(n):
 def _legendre1(a, p):
     return ((pow(a, (p-1) >> 1, p) + 1) % p) - 1
 
-def _legendre2(a, p):  # TODO: pretty sure this computes the Jacobi symbol
+
+# TODO: pretty sure this computes the Jacobi symbol
+def _legendre2(a, p):
     if a == 0:
         return 0
     x, y, L = a, p, 1
@@ -122,6 +125,7 @@ def _legendre_gmpy(n, p):
         return _util.gmpy.legendre(n, p)
     else:
         return _legendre1(n, p)
+
 
 # modular sqrt(n) mod p
 # p must be prime
@@ -157,12 +161,14 @@ def mod_sqrt(n, p):
     else:
         return a  # p == 2
 
+
 # modular inverse of a mod m
 def _modinv(a, m):
     a, x, u = a % m, 0, 1
     while a:
         x, u, m, a = u, x - (m//a)*u, a, m % a
     return x
+
 
 def _modinv_gmpy(a, m):
     return int(_util.gmpy.invert(a, m))

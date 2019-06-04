@@ -1,5 +1,6 @@
 from __future__ import division
 
+
 def mlucas(v, a, n):
     """
     Helper function for williams_pp1().
@@ -7,8 +8,10 @@ def mlucas(v, a, n):
     """
     v1, v2 = v, (v**2 - 2) % n
     for bit in bin(a)[3:]:
-        v1, v2 = ((v1**2 - 2) % n, (v1*v2 - v) % n) if bit == "0" else ((v1*v2 - v) % n, (v2**2 - 2) % n)
+        v1, v2 = ((v1**2 - 2) % n, (v1*v2 - v) % n) if bit == "0" \
+          else ((v1*v2 - v) % n, (v2**2 - 2) % n)
     return v1
+
 
 def williams_pp1(n):
     from _primefac._arith import ispower, ilog, isqrt, gcd

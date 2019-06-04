@@ -1,5 +1,6 @@
 from __future__ import division
 
+
 def pollardRho_brent(n):
     from _primefac._arith import gcd
     from _primefac._prime import isprime
@@ -9,7 +10,8 @@ def pollardRho_brent(n):
         return n
     g = n
     while g == n:
-        y, c, m, g, r, q = randrange(1, n), randrange(1, n), randrange(1, n), 1, 1, 1
+        y, c, m = randrange(1, n), randrange(1, n), randrange(1, n)
+        g, r, q = 1, 1, 1
         while g == 1:
             x, k = y, 0
             for _ in xrange(r):

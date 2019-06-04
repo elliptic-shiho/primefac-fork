@@ -1,5 +1,6 @@
 from __future__ import division
 
+
 def fermat(n):
     from _primefac._arith import isqrt
     x = isqrt(n) + 1

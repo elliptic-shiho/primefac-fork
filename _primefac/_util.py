@@ -15,6 +15,7 @@ except ImportError:
         mpz = int
         gmpy = None
 
+
 def listprod(a):
     return reduce(lambda x, y: x * y, a, 1)
 

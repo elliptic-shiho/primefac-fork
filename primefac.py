@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 from __future__ import print_function, division
+from six.moves import xrange
 import _primefac
 
 
@@ -54,23 +55,22 @@ def primefac(n, trial_limit=1000, rho_rounds=42000, verbose=False, methods=(
              _primefac.pollardRho_brent, _primefac.pollard_pm1,
              _primefac.williams_pp1, _primefac.ecm, _primefac.mpqs,
              _primefac.fermat, _primefac.factordb)):
-    from _primefac import isprime, isqrt, primegen, gcd
     from random import randrange
     if n < 2:
         return
-    if isprime(n):
+    if _primefac.isprime(n):
         yield n
         return
 
-    factors, nroot = [], isqrt(n)
+    factors, nroot = [], _primefac.isqrt(n)
     # Note that we remove factors of 2 whether the user wants to or not.
-    for p in primegen():
+    for p in _primefac.primegen():
         if n % p == 0:
             while n % p == 0:
                 yield p
                 n //= p
-            nroot = isqrt(n)
-            if isprime(n):
+            nroot = _primefac.isqrt(n)
+            if _primefac.isprime(n):
                 yield n
                 return
         if p > nroot:
@@ -79,7 +79,7 @@ def primefac(n, trial_limit=1000, rho_rounds=42000, verbose=False, methods=(
             return
         if p >= trial_limit:
             break
-    if isprime(n):
+    if _primefac.isprime(n):
         yield n
         return
 
@@ -89,12 +89,12 @@ def primefac(n, trial_limit=1000, rho_rounds=42000, verbose=False, methods=(
             n = min(factors)
             factors.remove(n)
             f = _primefac.pollardRho_brent(n)
-            if isprime(f):
+            if _primefac.isprime(f):
                 yield f
             else:
                 factors.append(f)
             n //= f
-            if isprime(n):
+            if _primefac.isprime(n):
                 yield n
             else:
                 factors.append(n)
@@ -116,39 +116,45 @@ def primefac(n, trial_limit=1000, rho_rounds=42000, verbose=False, methods=(
                     x = (x**2 + c) % n
                     y = (y**2 + c) % n
                     y = (y**2 + c) % n
-                    g = gcd(x-y, n)
+                    g = _primefac.gcd(x-y, n)
             # We now have a nontrivial factor g of n.  If we took too long to
             # get here, we're actually at the except statement.
-            if isprime(g):
+            if _primefac.isprime(g):
                 yield g
             else:
                 factors.append(g)
             n //= g
-            if isprime(n):
+            if _primefac.isprime(n):
                 yield n
             else:
                 factors.append(n)
         except Exception:
-            difficult.append(n)  # Factoring n took too long.  We'll have multifactor chug on it.
+            # Factoring n took too long.  We'll have multifactor chug on it.
+            difficult.append(n)
 
     factors = difficult
     while len(factors) != 0:
         n = min(factors)
         factors.remove(n)
         f = multifactor(n, methods=methods, verbose=verbose)
-        if isprime(f):
+        if _primefac.isprime(f):
             yield f
         else:
             factors.append(f)
         n //= f
-        if isprime(n):
+        if _primefac.isprime(n):
             yield n
         else:
             factors.append(n)
 
-def factorint(n, trial_limit=1000, rho_rounds=42000, methods=(_primefac.pollardRho_brent, _primefac.pollard_pm1, _primefac.williams_pp1, _primefac.ecm, _primefac.mpqs, _primefac.fermat, _primefac.factordb)):
+
+def factorint(n, trial_limit=1000, rho_rounds=42000, methods=(
+              _primefac.pollardRho_brent, _primefac.pollard_pm1,
+              _primefac.williams_pp1, _primefac.ecm, _primefac.mpqs,
+              _primefac.fermat, _primefac.factordb)):
     out = {}
-    for p in primefac(n, trial_limit=trial_limit, rho_rounds=rho_rounds, methods=methods):
+    for p in primefac(n, trial_limit=trial_limit, rho_rounds=rho_rounds,
+                      methods=methods):
         out[p] = out.get(p, 0) + 1
     return out
 
@@ -227,14 +233,19 @@ CREDITS:
        http://programmingpraxis.com/2010/04/23/
 """  # TODO performance, credits
 
+
 def rpn(instr):
     stack = []
     for token in instr.split():
         if set(token).issubset("1234567890L"):
             stack.append(int(token.rstrip('L')))
-        elif len(token) > 1 and token[0] == '-' and set(token[1:]).issubset("1234567890L"):
+
+        elif len(token) > 1 and token[0] == '-' \
+                and set(token[1:]).issubset("1234567890L"):
             stack.append(int(token))
-        elif token in ('+', '-', '*', '/', '%', '**', 'x', 'xx'):   # binary operators
+
+        # binary operators
+        elif token in ('+', '-', '*', '/', '%', '**', 'x', 'xx'):
             b = stack.pop()
             a = stack.pop()
             if token == '+':
@@ -254,22 +265,24 @@ def rpn(instr):
             elif token == 'xx':
                 res = a ** b
             stack.append(res)
-        elif token in ('!', '#', 'p!'):                             # unary operators
+
+        # unary operators
+        elif token in ('!', '#', 'p!'):
             a = stack.pop()
             if token == '!':
-                res = listprod(xrange(1, a+1))
+                res = _primefac.listprod(xrange(1, a+1))
             elif token == '#':
-                res = listprod(primes(a+1))
+                res = _primefac.listprod(_primefac.primes(a+1))
             elif token == 'p!':
-                res = listprod(primes(a+1))
+                res = _primefac.listprod(_primefac.primes(a+1))
             stack.append(res)
         else:
-            raise Exception("Failed to evaluate RPN expression: not sure what to do with '{t}'.".format(t=token))
+            raise Exception("Failed to evaluate RPN expression: not sure what "
+                            "to do with '{t}'.".format(t=token))
     return [_primefac.mpz(i) for i in stack]
 
+
 def main(argv):
-    from six.moves import xrange, reduce
-    import six
     if len(argv) == 1:
         sysexit(usage)
     rpx, tr, rr, veb, su = [], 1000, 42000, False, False
@@ -280,7 +293,9 @@ def main(argv):
           "mpqs": _primefac.mpqs,
           "fermat": _primefac.fermat,
           "factordb": _primefac.factordb}
-    methods = (_primefac.pollardRho_brent, _primefac.pollard_pm1, _primefac.williams_pp1, _primefac.ecm, _primefac.mpqs, _primefac.fermat, _primefac.factordb)
+    methods = (_primefac.pollardRho_brent, _primefac.pollard_pm1,
+               _primefac.williams_pp1, _primefac.ecm, _primefac.mpqs,
+               _primefac.fermat, _primefac.factordb)
     try:
         for arg in argv[1:]:
             if arg in ("-v", "--verbose"):
@@ -290,11 +305,15 @@ def main(argv):
             elif arg in ("-vs", "-sv"):
                 veb, su = True, True
             elif arg[:3] == "-t=":
-                tr = "inf" if arg[3:] == "inf" else int(arg[3:])    # Maximum number for trial division
+                # Maximum number for trial division
+                tr = "inf" if arg[3:] == "inf" else int(arg[3:])
             elif arg[:3] == "-r=":
-                rr = "inf" if arg[3:] == "inf" else int(arg[3:])    # Number of rho rounds before multifactor
-            elif arg[:3] == "-m=":  # methods = tuple(ms[x] for x in arg[3:].split(',') if x in ms)
+                # Number of rho rounds before multifactor
+                rr = "inf" if arg[3:] == "inf" else int(arg[3:])
+
+            elif arg[:3] == "-m=":
                 methods = []
+                # methods = tuple(ms[x] for x in arg[3:].split(',') if x in ms)
                 for x in arg[3:].split(','):
                     if x in ms:
                         if x in ("p-1", "p+1", "mpqs") and ms[x] in methods:
@@ -303,7 +322,7 @@ def main(argv):
             else:
                 rpx.append(arg)
         nums = rpn(' '.join(rpx))
-    except:
+    except Exception as e:
         sysexit("Error while parsing arguments" + str(e))
     if su:
         print()
@@ -311,7 +330,7 @@ def main(argv):
         print("%d: " % n, end='')
         f = {}
         for p in primefac(n, trial_limit=(n if tr == "inf" else tr),
-                            rho_rounds=rr, verbose=veb, methods=methods):
+                          rho_rounds=rr, verbose=veb, methods=methods):
             f[p] = f.get(p, 0) + 1
             print(p, end=' ')
             stdout.flush()

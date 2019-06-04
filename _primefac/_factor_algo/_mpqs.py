@@ -1,5 +1,6 @@
 from __future__ import division
 
+
 # Multiple Polynomial Quadratic Sieve
 # Most of this function is copied verbatim from
 # https://codegolf.stackexchange.com/questions/8629/9088#9088
@@ -49,7 +50,7 @@ def mpqs(n):
                     return p
                 p = nextprime(p)
 
-            x_max = len(prime)*60 # size of the sieve
+            x_max = len(prime)*60  # size of the sieve
 
             # maximum value on the sieved range
             m_val = (x_max * root_2n) >> 1
@@ -103,7 +104,7 @@ def mpqs(n):
                     logp = log_p[i]
                     g = gcd(A, p)
                     if g == p:
-                      continue
+                        continue
                     inv_A = modinv(A // g, p // g) * g
                     # modular root of the quadratic
                     a, b, k = (mpz(((mod_root[i] - B) * inv_A) % p),
@@ -141,7 +142,7 @@ def mpqs(n):
                                     track perfect sqr facs to avoid sqrting
                                     something huge at the end
                                     """
-                                    sqr += [p]  
+                                    sqr += [p]
                                 vec ^= {p}
                                 sieve_val = mpz(sieve_val // p)
                         if sieve_val == 1:  # smooth
@@ -157,7 +158,8 @@ def mpqs(n):
                             sqr += list(vec & pair_vec) + [sieve_val]
                             vec ^= pair_vec
                             smooth += [(vec, (sqr + pair_vals[0],
-                              (A*x+B)*pair_vals[1], root_A*pair_vals[2]))]
+                                        (A*x+B)*pair_vals[1],
+                                         root_A*pair_vals[2]))]
                             used_prime |= vec
                             num_partial += 1
                         else:
@@ -180,12 +182,15 @@ def mpqs(n):
             offset = 0
             null_cols = []
             for col in xrange(num_smooth):
-                pivot = bitfields[col-offset] & masks[col] == 0  # This occasionally throws IndexErrors.
+                # This occasionally throws IndexErrors.
+                pivot = bitfields[col-offset] & masks[col] == 0
                 # TODO: figure out why it throws errors and fix it.
                 for row in xrange(col+1-offset, num_used_prime):
                     if bitfields[row] & masks[col]:
                         if pivot:
-                            bitfields[col-offset], bitfields[row], pivot = bitfields[row], bitfields[col-offset], False
+                            bitfields[col-offset], bitfields[row] = \
+                              bitfields[row], bitfields[col-offset]
+                            pivot = False
                         else:
                             bitfields[row] ^= bitfields[col-offset]
                 if pivot:

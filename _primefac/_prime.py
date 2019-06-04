@@ -6,6 +6,7 @@ import itertools
 
 from _primefac import _util
 
+
 # Recursive sieve of Eratosthenes
 def primegen():
     yield 2
@@ -36,9 +37,11 @@ def primegen():
             sieve[next_] = step
         n += 2
 
+
 def primes(n):
     # The primes STRICTLY LESS than n
     return list(itertools.takewhile(lambda p: p < n, primegen()))
+
 
 def nextprime(n):
     if n < 2:
@@ -61,11 +64,13 @@ def nextprime(n):
         if isprime(m+4):
             return m+4
 
+
 def pfactor(n):
     s, d, q = 0, n-1, 2
     while not d & q - 1:
         s, q = s+1, q*2
     return s, d // (q // 2)
+
 
 def _sprp(n, a, s=None, d=None):
     if n % 2 == 0:
@@ -85,6 +90,7 @@ def _sprp(n, a, s=None, d=None):
 def _sprp_gmpy2(n, a, s=None, d=None):
     return _util.gmpy.is_strong_prp(n, a)
 
+
 # Used in SLPRP.  TODO: figure out what this does.
 def chain(n, u1, v1, u2, v2, d, q, m):
     k = q
@@ -99,6 +105,7 @@ def chain(n, u1, v1, u2, v2, d, q, m):
             u1, v1, k = (u1//2) % n, (v1//2) % n, (q*k) % n
         m //= 2
     return u1, v1, k
+
 
 def _isprime(n, tb=(3, 5, 7, 11), eb=(2,), mrb=()):  # TODO: more streamlining
     from _primefac import _arith
