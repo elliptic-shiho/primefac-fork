@@ -3,17 +3,19 @@
 from __future__ import print_function, division
 import _primefac
 
+
 # Note that the multiprocing incurs relatively significant overhead.
 # Only call this if n is proving difficult to factor.
-def multifactor(n, methods=(_primefac.pollardRho_brent, _primefac.pollard_pm1, _primefac.williams_pp1,
-                _primefac.ecm, _primefac.mpqs, _primefac.fermat, _primefac.factordb), verbose=False):
+def multifactor(n, methods=(_primefac.pollardRho_brent, _primefac.pollard_pm1,
+                _primefac.williams_pp1, _primefac.ecm, _primefac.mpqs,
+                _primefac.fermat, _primefac.factordb), verbose=False):
     from multiprocessing import Process, Queue as mpQueue
-    from six.moves import xrange, reduce
-    import six
+
     def factory(method, n, output):
         g = method(n)
         if g is not None:
-          output.put((g, str(method).split()[1]))
+            output.put((g, str(method).split()[1]))
+
     factors = mpQueue()
     procs = [Process(target=factory, args=(m, n, factors)) for m in methods]
     for p in procs:
@@ -42,18 +44,18 @@ Otherwise,
     TODO: a few rounds of ECM by itself?
     TODO: a certain amount of P-1?
 3.  Launch multifactor on the remainder.  Multifactor has enough overhead that
-    we want to be fairly sure that rho isn't likely to yield new factors soon. 
+    we want to be fairly sure that rho isn't likely to yield new factors soon.
     The default value of rho_rounds=42000 seems good for that but is probably
     overkill.
 '''
 
-def primefac(n, trial_limit=1000, rho_rounds=42000, verbose=False,
-             methods=(_primefac.pollardRho_brent, _primefac.pollard_pm1, _primefac.williams_pp1, _primefac.ecm, _primefac.mpqs,
-                      _primefac.fermat, _primefac.factordb)):
-    from _primefac import isprime, isqrt, primegen
-    from six.moves import xrange, reduce
+
+def primefac(n, trial_limit=1000, rho_rounds=42000, verbose=False, methods=(
+             _primefac.pollardRho_brent, _primefac.pollard_pm1,
+             _primefac.williams_pp1, _primefac.ecm, _primefac.mpqs,
+             _primefac.fermat, _primefac.factordb)):
+    from _primefac import isprime, isqrt, primegen, gcd
     from random import randrange
-    import six
     if n < 2:
         return
     if isprime(n):
@@ -115,7 +117,8 @@ def primefac(n, trial_limit=1000, rho_rounds=42000, verbose=False,
                     y = (y**2 + c) % n
                     y = (y**2 + c) % n
                     g = gcd(x-y, n)
-            # We now have a nontrivial factor g of n.  If we took too long to get here, we're actually at the except statement.
+            # We now have a nontrivial factor g of n.  If we took too long to
+            # get here, we're actually at the except statement.
             if isprime(g):
                 yield g
             else:
