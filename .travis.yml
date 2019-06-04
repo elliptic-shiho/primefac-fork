@@ -1,7 +1,7 @@
 language: python
 python:
   - "2.7"
-  - "3.5"
+  - "3.7"
 before_install:
   - "sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test -y"
   - "sudo apt-get update -qq"
@@ -9,11 +9,4 @@ before_install:
 install:
   - "pip install ."
 script:
-  - "python -m primefac -v -m=prb 1234567891011121314151617181920"
-  - "python -m primefac -v -m=p-1 12345678910111213141516171819"
-  - "python -m primefac -v -m=p+1 1234567891011121314151617181920"
-  - "python -m primefac -v -m=ecm 1234567891011121314151617181920"
-  - "python -m primefac -v -m=mpqs 1234567891011121314151617181920"
-  - "python -m primefac -v -m=mpqs 104540795716322876192089"
-  - "python -m primefac -v -m=fermat 1524157877515647915714744640784245532229843573887007920273189"
-  - "python -m primefac -v -m=factordb 13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084170"
+  - "./test.sh"
