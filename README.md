@@ -12,8 +12,8 @@ This is fork of [primefac](https://pypi.python.org/pypi/primefac) Module.
 
 ## Requirements
 * Python 2.x/Python 3.x
-  - If you want to faster factorization, you can use *gmpy* or *gmpy2*
-  - If you install *factordb-pycli* module, primefac-fork will use it for factor large number.
+  - To faster factorization, primefac-fork uses *gmpy* so you need to install it (*gmpy* will install in below installation process). 
+  - To factor with collective intelligence, primefac-fork uses *factordb-pycli* module. also this package will install in below. 
 
 ## License
 This software released under the MIT License. 
