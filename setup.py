@@ -13,7 +13,7 @@ with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
 
 setup(
     name='primefac',
-    version='1.1.1',
+    version='1.1.1-2',
     description='Module and command-line utility for factoring integers into '
     'primes.  Formerly called pyfac.',
     long_description=long_description,
@@ -27,7 +27,7 @@ setup(
     'mpqs',
     packages=find_packages(),
     py_modules=['primefac', '_primefac'],
-    install_requires=['six', 'gmpy', 'factordb-pycli'],
+    install_requires=['six', 'gmpy2', 'factordb-pycli'],
 
     classifiers=[
         'Development Status :: 5 - Production/Stable',
