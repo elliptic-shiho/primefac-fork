@@ -4,6 +4,11 @@ from __future__ import print_function, division
 from six.moves import xrange
 import _primefac
 
+def multifactor_proc(method, n, output):
+    g = method(n)
+    if g is not None:
+        output.put((g, str(method).split()[1]))
+
 
 # Note that the multiprocing incurs relatively significant overhead.
 # Only call this if n is proving difficult to factor.
@@ -12,13 +17,8 @@ def multifactor(n, methods=(_primefac.pollardRho_brent, _primefac.pollard_pm1,
                 _primefac.fermat, _primefac.factordb), verbose=False):
     from multiprocessing import Process, Queue as mpQueue
 
-    def factory(method, n, output):
-        g = method(n)
-        if g is not None:
-            output.put((g, str(method).split()[1]))
-
     factors = mpQueue()
-    procs = [Process(target=factory, args=(m, n, factors)) for m in methods]
+    procs = [Process(target=multifactor_proc, args=(m, n, factors)) for m in methods]
     for p in procs:
         p.start()
     (f, g) = factors.get()
