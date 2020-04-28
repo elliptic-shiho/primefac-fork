@@ -14,12 +14,11 @@ with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
 setup(
     name='primefac',
     version='1.1.1-2',
-    description='Module and command-line utility for factoring integers into '
-    'primes.  Formerly called pyfac.',
+    description='A fork of primefac',
     long_description=long_description,
-    url='https://pypi.python.org/pypi/primefac',
-    author='lucasbrown.cit',
-    author_email='lucasbrown.cit@gmail.com',
+    url='https://pypi.python.org/pypi/primefac-fork',
+    author='Shiho Midorikawa (Original: lucasbrown.cit)',
+    author_email='shiho.elliptic@gmail.com',
     license='MIT',
     keywords='number numbers integer integers factoring factorization primes '
     'prime numbers math mathematics pollard\'s rho pollard\'s p-1 williams\' '
@@ -39,6 +38,7 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.8',
         'Topic :: Scientific/Engineering',
         'Topic :: Scientific/Engineering :: Mathematics',
         'Topic :: Software Development :: Libraries',
