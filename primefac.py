@@ -4,21 +4,28 @@ from __future__ import print_function, division
 from six.moves import xrange
 import _primefac
 
-def multifactor_proc(method, n, output):
+def _multifactor_proc(method, n, output):
     g = method(n)
     if g is not None:
         output.put((g, str(method).split()[1]))
 
+factoring_methods = {
+  "prb": _primefac.pollardRho_brent,
+  "p-1": _primefac.pollard_pm1,
+  "p+1": _primefac.williams_pp1,
+  "ecm": _primefac.ecm,
+  "mpqs": _primefac.mpqs,
+  "fermat": _primefac.fermat,
+  "factordb": _primefac.factordb
+}
 
 # Note that the multiprocing incurs relatively significant overhead.
 # Only call this if n is proving difficult to factor.
-def multifactor(n, methods=(_primefac.pollardRho_brent, _primefac.pollard_pm1,
-                _primefac.williams_pp1, _primefac.ecm, _primefac.mpqs,
-                _primefac.fermat, _primefac.factordb), verbose=False):
+def multifactor(n, methods=factoring_methods.values(), verbose=False):
     from multiprocessing import Process, Queue as mpQueue
 
     factors = mpQueue()
-    procs = [Process(target=multifactor_proc, args=(m, n, factors)) for m in methods]
+    procs = [Process(target=_multifactor_proc, args=(m, n, factors)) for m in methods]
     for p in procs:
         p.start()
     (f, g) = factors.get()
@@ -51,10 +58,8 @@ Otherwise,
 '''
 
 
-def primefac(n, trial_limit=1000, rho_rounds=42000, verbose=False, methods=(
-             _primefac.pollardRho_brent, _primefac.pollard_pm1,
-             _primefac.williams_pp1, _primefac.ecm, _primefac.mpqs,
-             _primefac.fermat, _primefac.factordb)):
+def primefac(n, trial_limit=1000, rho_rounds=42000, verbose=False,
+             methods=factoring_methods.values()):
     from random import randrange
     if n < 2:
         return
@@ -148,10 +153,8 @@ def primefac(n, trial_limit=1000, rho_rounds=42000, verbose=False, methods=(
             factors.append(n)
 
 
-def factorint(n, trial_limit=1000, rho_rounds=42000, methods=(
-              _primefac.pollardRho_brent, _primefac.pollard_pm1,
-              _primefac.williams_pp1, _primefac.ecm, _primefac.mpqs,
-              _primefac.fermat, _primefac.factordb)):
+def factorint(n, trial_limit=1000, rho_rounds=42000,
+              methods=factoring_methods.values()):
     out = {}
     for p in primefac(n, trial_limit=trial_limit, rho_rounds=rho_rounds,
                       methods=methods):
@@ -313,13 +316,12 @@ def main(argv):
 
             elif arg[:3] == "-m=":
                 methods = []
-                # methods = tuple(ms[x] for x in arg[3:].split(',') if x in ms)
                 for x in arg[3:].split(','):
-                    if x in ms:
+                    if x in factoring_methods:
                         if x in ("p-1", "p+1", "mpqs", "fermat",
-                          "factordb") and ms[x] in methods:
+                          "factordb") and factoring_methods[x] in methods:
                             continue
-                        methods.append(ms[x])
+                        methods.append(factoring_methods[x])
             else:
                 rpx.append(arg)
         nums = rpn(' '.join(rpx))
