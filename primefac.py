@@ -316,7 +316,8 @@ def main(argv):
                 # methods = tuple(ms[x] for x in arg[3:].split(',') if x in ms)
                 for x in arg[3:].split(','):
                     if x in ms:
-                        if x in ("p-1", "p+1", "mpqs") and ms[x] in methods:
+                        if x in ("p-1", "p+1", "mpqs", "fermat",
+                          "factordb") and ms[x] in methods:
                             continue
                         methods.append(ms[x])
             else:
