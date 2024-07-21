@@ -14,10 +14,10 @@ def mpqs(n):
           linear algebra.
     TODO: When we need to increase the bound, what is the optimal increment?
     """
-    from _primefac._arith import ispower, isqrt, ilog, gcd, mod_sqrt, legendre
-    from _primefac._arith import modinv
-    from _primefac._prime import isprime, nextprime
-    from _primefac._util import listprod, mpz
+    from primefac._primefac._arith import ispower, isqrt, ilog, gcd, mod_sqrt, legendre
+    from primefac._primefac._arith import modinv
+    from primefac._primefac._prime import isprime, nextprime
+    from primefac._primefac._util import listprod, mpz
     from six.moves import xrange
     from math import log
 

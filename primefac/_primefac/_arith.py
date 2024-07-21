@@ -1,6 +1,6 @@
 from __future__ import print_function, division
 
-from _primefac import _util, _prime
+from primefac._primefac import _util, _prime
 
 
 def _gcd(a, b):

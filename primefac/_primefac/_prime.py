@@ -4,7 +4,7 @@ from six.moves import xrange
 import six
 import itertools
 
-from _primefac import _util
+from primefac._primefac import _util
 
 
 # Recursive sieve of Eratosthenes
