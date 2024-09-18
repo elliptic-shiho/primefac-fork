@@ -15,11 +15,10 @@ def mpqs(n):
     TODO: When we need to increase the bound, what is the optimal increment?
     """
     from primefac._primefac._arith import ispower, isqrt, ilog, gcd, mod_sqrt, legendre
-    from primefac._primefac._arith import modinv
+    from primefac._primefac._arith import modinv, log10
     from primefac._primefac._prime import isprime, nextprime
     from primefac._primefac._util import listprod, mpz
     from six.moves import xrange
-    from math import log
 
     # Special cases: this function poorly handles primes and perfect powers:
     m = ispower(n)
@@ -28,8 +27,8 @@ def mpqs(n):
     if isprime(n):
         return n
 
-    root_2n = isqrt(2*n)
-    bound = ilog(n**6, 10)**2  # formula chosen by experiment
+    root_2n = isqrt(2 * n)
+    bound = ilog(n**6, 10) ** 2  # formula chosen by experiment
 
     while True:
         try:
@@ -44,13 +43,13 @@ def mpqs(n):
                     # the rhs was [int(mod_sqrt(n, p))].
                     # If we get errors, put it back.
                     mod_root += [mod_sqrt(n, p)]
-                    log_p += [log(p, 10)]
+                    log_p += [log10(p)]
                     num_prime += 1
                 elif leg == 0:
                     return p
                 p = nextprime(p)
 
-            x_max = len(prime)*60  # size of the sieve
+            x_max = len(prime) * 60  # size of the sieve
 
             # maximum value on the sieved range
             m_val = (x_max * root_2n) >> 1
@@ -61,7 +60,7 @@ def mpqs(n):
             also makes the smoothness check slower. there's a happy medium
             somewhere, depending on how efficient the smoothness check is
             """
-            thresh = log(m_val, 10) * 0.735
+            thresh = log10(m_val) * 0.735
 
             # skip small primes. they contribute very little to the log sum
             # and add a lot of unnecessary entries to the table instead, fudge
@@ -92,11 +91,11 @@ def mpqs(n):
                 # such that B*B-A*C = n. this is unsolvable if n is not a
                 # quadratic residue mod sqrt(A)
                 b = mod_sqrt(n, root_A)
-                B = (b + (n - b*b) * modinv(b + b, root_A)) % A
-                C = (B*B - n) // A        # B*B-A*C = n <=> C = (B*B-n)//A
+                B = (b + (n - b * b) * modinv(b + b, root_A)) % A
+                C = (B * B - n) // A  # B*B-A*C = n <=> C = (B*B-n)//A
                 num_poly += 1
                 # sieve for prime factors
-                sums, i = [0.0]*(2*x_max), 0
+                sums, i = [0.0] * (2 * x_max), 0
                 for p in prime:
                     if p < min_prime:
                         i += 1
@@ -107,24 +106,26 @@ def mpqs(n):
                         continue
                     inv_A = modinv(A // g, p // g) * g
                     # modular root of the quadratic
-                    a, b, k = (mpz(((mod_root[i] - B) * inv_A) % p),
-                               mpz(((p - mod_root[i] - B) * inv_A) % p),
-                               0)
+                    a, b, k = (
+                        mpz(((mod_root[i] - B) * inv_A) % p),
+                        mpz(((p - mod_root[i] - B) * inv_A) % p),
+                        0,
+                    )
                     while k < x_max:
-                        if k+a < x_max:
-                            sums[k+a] += logp
-                        if k+b < x_max:
-                            sums[k+b] += logp
+                        if k + a < x_max:
+                            sums[k + a] += logp
+                        if k + b < x_max:
+                            sums[k + b] += logp
                         if k:
-                            sums[k-a+x_max] += logp
-                            sums[k-b+x_max] += logp
+                            sums[k - a + x_max] += logp
+                            sums[k - b + x_max] += logp
                         k += p
                     i += 1
                 # check for smooths
                 i = 0
                 for v in sums:
                     if v > thresh:
-                        x, vec, sqr = x_max-i if i > x_max else i, set(), []
+                        x, vec, sqr = x_max - i if i > x_max else i, set(), []
                         # because B*B-n = A*C
                         # (A*x+B)^2 - n = A*A*x*x+2*A*B*x + B*B - n
                         #               = A*(A*x*x+2*B*x+C)
@@ -132,7 +133,7 @@ def mpqs(n):
                         # (A*x+B)^2 = A*(A*x*x+2*B*x+C) (mod n)
                         # because A is chosen to be square, it doesn't
                         # need to be sieved
-                        sieve_val = (A*x + 2*B)*x + C
+                        sieve_val = (A * x + 2 * B) * x + C
                         if sieve_val < 0:
                             vec, sieve_val = {-1}, -sieve_val
                         for p in prime:
@@ -146,7 +147,7 @@ def mpqs(n):
                                 vec ^= {p}
                                 sieve_val = mpz(sieve_val // p)
                         if sieve_val == 1:  # smooth
-                            smooth += [(vec, (sqr, (A*x+B), root_A))]
+                            smooth += [(vec, (sqr, (A * x + B), root_A))]
                             used_prime |= vec
                         elif sieve_val in partial:
                             """
@@ -157,19 +158,26 @@ def mpqs(n):
                             pair_vec, pair_vals = partial[sieve_val]
                             sqr += list(vec & pair_vec) + [sieve_val]
                             vec ^= pair_vec
-                            smooth += [(vec, (sqr + pair_vals[0],
-                                        (A*x+B)*pair_vals[1],
-                                         root_A*pair_vals[2]))]
+                            smooth += [
+                                (
+                                    vec,
+                                    (
+                                        sqr + pair_vals[0],
+                                        (A * x + B) * pair_vals[1],
+                                        root_A * pair_vals[2],
+                                    ),
+                                )
+                            ]
                             used_prime |= vec
                             num_partial += 1
                         else:
                             # save partial for later pairing
-                            partial[sieve_val] = (vec, (sqr, A*x+B, root_A))
+                            partial[sieve_val] = (vec, (sqr, A * x + B, root_A))
                     i += 1
                 num_smooth, num_used_prime = len(smooth), len(used_prime)
             used_prime = sorted(list(used_prime))
             # set up bit fields for gaussian elimination
-            masks, mask, bitfields = [], 1, [0]*num_used_prime
+            masks, mask, bitfields = [], 1, [0] * num_used_prime
             for vec, _ in smooth:
                 masks += [mask]
                 i = 0
@@ -183,22 +191,24 @@ def mpqs(n):
             null_cols = []
             for col in xrange(num_smooth):
                 # This occasionally throws IndexErrors.
-                pivot = bitfields[col-offset] & masks[col] == 0
+                pivot = bitfields[col - offset] & masks[col] == 0
                 # TODO: figure out why it throws errors and fix it.
-                for row in xrange(col+1-offset, num_used_prime):
+                for row in xrange(col + 1 - offset, num_used_prime):
                     if bitfields[row] & masks[col]:
                         if pivot:
-                            bitfields[col-offset], bitfields[row] = \
-                              bitfields[row], bitfields[col-offset]
+                            bitfields[col - offset], bitfields[row] = (
+                                bitfields[row],
+                                bitfields[col - offset],
+                            )
                             pivot = False
                         else:
-                            bitfields[row] ^= bitfields[col-offset]
+                            bitfields[row] ^= bitfields[col - offset]
                 if pivot:
                     null_cols += [col]
                     offset += 1
             # reduced row echelon form
             for row in xrange(num_used_prime):
-                mask = bitfields[row] & -bitfields[row]        # lowest set bit
+                mask = bitfields[row] & -bitfields[row]  # lowest set bit
                 for up_row in xrange(row):
                     if bitfields[up_row] & mask:
                         bitfields[up_row] ^= bitfields[row]
@@ -207,7 +217,7 @@ def mpqs(n):
             # if _still_ none exist, sieve more values
             for col in null_cols:
                 all_vec, (lh, rh, rA) = smooth[col]
-                lhs = lh   # sieved values (left hand side)
+                lhs = lh  # sieved values (left hand side)
                 rhs = [rh]  # sieved values - n (right hand side)
                 rAs = [rA]  # root_As (cofactor of lhs)
                 i = 0
@@ -219,11 +229,12 @@ def mpqs(n):
                         rhs += [rh]
                         rAs += [rA]
                     i += 1
-                factor = gcd(listprod(rAs)*listprod(lhs) - listprod(rhs), n)
+                factor = gcd(listprod(rAs) * listprod(lhs) - listprod(rhs), n)
                 if 1 < factor < n:
                     return factor
         except IndexError:
             pass
         bound *= 1.2
+
 
 __all__ = [mpqs]

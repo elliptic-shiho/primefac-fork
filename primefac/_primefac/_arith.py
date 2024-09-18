@@ -14,8 +14,18 @@ def _isqrt(n):
         return 0
     x, y = n, (n + 1) // 2
     while y < x:
-        x, y = y, (y + n//y) // 2
+        x, y = y, (y + n // y) // 2
     return x
+
+
+def _log10(a):
+    import math
+
+    return math.log10(a)
+
+
+def _log10_gmpy(a):
+    return _util.gmpy.log10(a)
 
 
 def _introot(n, r=2):
@@ -85,7 +95,7 @@ def ispower(n):
         r = introot(n, p)
         if r is None:
             continue
-        if r ** p == n:
+        if r**p == n:
             return r
         if r == 1:
             return 0
@@ -94,7 +104,7 @@ def ispower(n):
 # legendre symbol (a|m)
 # TODO: which is faster?
 def _legendre1(a, p):
-    return ((pow(a, (p-1) >> 1, p) + 1) % p) - 1
+    return ((pow(a, (p - 1) >> 1, p) + 1) % p) - 1
 
 
 # TODO: pretty sure this computes the Jacobi symbol
@@ -114,7 +124,7 @@ def _legendre2(a, p):
             if y & 7 == 3 or y & 7 == 5:
                 L = -L
         if x == 1:
-            return ((L+1) % p) - 1
+            return ((L + 1) % p) - 1
         if x & 3 == 3 and y & 3 == 3:
             L = -L
         x, y = y % x, x
@@ -132,32 +142,32 @@ def _legendre_gmpy(n, p):
 def mod_sqrt(n, p):
     a = n % p
     if p % 4 == 3:
-        return pow(a, (p+1) >> 2, p)
+        return pow(a, (p + 1) >> 2, p)
     elif p % 8 == 5:
-        v = pow(a << 1, (p-5) >> 3, p)
-        i = ((a*v*v << 1) % p) - 1
-        return (a*v*i) % p
+        v = pow(a << 1, (p - 5) >> 3, p)
+        i = ((a * v * v << 1) % p) - 1
+        return (a * v * i) % p
     elif p % 8 == 1:  # Shank's method
-        q, e = p-1, 0
+        q, e = p - 1, 0
         while q & 1 == 0:
             e += 1
             q >>= 1
         n = 2
         while legendre(n, p) != -1:
             n += 1
-        w, x, y, r = pow(a, q, p), pow(a, (q+1) >> 1, p), pow(n, q, p), e
+        w, x, y, r = pow(a, q, p), pow(a, (q + 1) >> 1, p), pow(n, q, p), e
         while True:
             if w == 1:
                 return x
             v, k = w, 0
-            while v != 1 and k+1 < r:
-                v = (v*v) % p
+            while v != 1 and k + 1 < r:
+                v = (v * v) % p
                 k += 1
             if k == 0:
                 return x
-            d = pow(y, 1 << (r-k-1), p)
-            x, y = (x*d) % p, (d*d) % p
-            w, r = (w*y) % p, k
+            d = pow(y, 1 << (r - k - 1), p)
+            x, y = (x * d) % p, (d * d) % p
+            w, r = (w * y) % p, k
     else:
         return a  # p == 2
 
@@ -166,7 +176,7 @@ def mod_sqrt(n, p):
 def _modinv(a, m):
     a, x, u = a % m, 0, 1
     while a:
-        x, u, m, a = u, x - (m//a)*u, a, m % a
+        x, u, m, a = u, x - (m // a) * u, a, m % a
     return x
 
 
@@ -182,9 +192,11 @@ if _util.gmpy_version > 0:
     if _util.gmpy_version == 2:
         isqrt = _util.gmpy.isqrt
         introot = _introot_gmpy2
+        log10 = _log10_gmpy
     else:
         isqrt = _util.gmpy.sqrt
         introot = _introot_gmpy
+        log10 = _log10
 else:
     gcd = _gcd
     isqrt = _isqrt
@@ -192,6 +204,6 @@ else:
     jacobi = _jacobi
     legendre = _legendre1
     modinv = _modinv
+    log10 = _log10
 
-__all__ = [gcd, isqrt, introot, jacobi, ispower, legendre, modinv, mod_sqrt,
-           ilog]
+__all__ = [gcd, isqrt, introot, jacobi, ispower, legendre, modinv, mod_sqrt, ilog]
