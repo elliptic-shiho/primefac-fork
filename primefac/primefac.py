@@ -1,4 +1,5 @@
 import primefac._primefac as _primefac
+import math
 import sys
 
 
@@ -271,7 +272,7 @@ def rpn(instr):
             elif token == "x":
                 res = a * b
             elif token == "/":
-                res = a / b
+                res = a // b
             elif token == "%":
                 res = a % b
             elif token == "**":
@@ -352,7 +353,13 @@ def primefac_cli_main(argv):
         sys.exit("Error while parsing arguments" + str(e))
     if su:
         print()
+
+    LOG2_10 = math.log2(10)
+    MAX_DIGITS_LOG2 = LOG2_10 * 4096
     for n in nums:
+        # 14284.290808015658 \approx log_2(10) * 4300
+        if n.bit_length() > MAX_DIGITS_LOG2:
+            sys.set_int_max_str_digits(int(math.ceil(n.bit_length() / LOG2_10)))
         print("%d: " % n, end="")
         f = {}
         for p in primefac(
@@ -383,4 +390,3 @@ def primefac_cli_main(argv):
                     outstr += " %d^%d x" % (p, f[p])
             print(outstr[:-2])
             print()
-

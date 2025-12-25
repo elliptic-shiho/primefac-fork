@@ -14,7 +14,7 @@ with open(path.join(here, "DESCRIPTION.rst"), encoding="utf-8") as f:
 
 setup(
     name="primefac",
-    version="1.2",
+    version="1.2.1",
     description="A fork of primefac",
     long_description=long_description,
     url="https://pypi.python.org/pypi/primefac-fork",
